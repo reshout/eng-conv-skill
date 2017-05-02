@@ -1,5 +1,5 @@
 import logging
-import json
+import random
 
 logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
@@ -36,7 +36,7 @@ def build_audio_response(audio_url):
 
 
 def get_welcome_response():
-    output_speech = 'You can say simply, "play 7". The number can be between 1 and 100.'
+    output_speech = 'You can say simply, "play {}". The number can be between 1 and 100.'.format(random.randrange(1, 100, 1))
     return build_text_response(output_speech, False)
 
 
@@ -55,7 +55,7 @@ def play_particular(intent, session):
     if 'value' not in conv_no:
         return get_welcome_response()
     conv_no = int(conv_no['value'])
-    if conv_no >= 0 and conv_no <= 100:
+    if 0 <= conv_no <= 100:
         return build_audio_response('https://s3.amazonaws.com/eng-conv-skill/DAY{:03d}.mp3'.format(conv_no))
     else:
         return get_welcome_response()
