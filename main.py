@@ -35,7 +35,7 @@ def build_audio_response(audio_url):
     return response
 
 
-def get_welcome_response():
+def help():
     output_speech = 'You can say simply, "play {}". The number can be between 1 and 100.'.format(random.randrange(1, 100, 1))
     return build_text_response(output_speech, False)
 
@@ -47,22 +47,26 @@ def handle_session_end_request():
 
 def on_launch(request, session):
     logger.debug('request={}, session={}'.format(request, session))
-    return get_welcome_response()
+    return help()
 
 
-def play_particular(intent, session):
-    conv_no = intent['slots']['conv_no']
-    if 'value' not in conv_no:
-        return get_welcome_response()
-    conv_no = int(conv_no['value'])
+def play_particular(intent):
+    try:
+        conv_no = int(intent['slots']['conv_no']['value'])
+        return play_conv(conv_no)
+    except:
+        return help()
+
+
+def play_random():
+    return play_conv(random.randrange(1, 100, 1))
+
+
+def play_conv(conv_no):
     if 0 <= conv_no <= 100:
         return build_audio_response('https://s3.amazonaws.com/eng-conv-skill/DAY{:03d}.mp3'.format(conv_no))
     else:
-        return get_welcome_response()
-
-
-def play_random(intent, session):
-    return get_welcome_response()
+        return help()
 
 
 def on_intent(request, session):
@@ -71,13 +75,13 @@ def on_intent(request, session):
     intent_name = request['intent']['name']
 
     if intent_name == 'AMAZON.HelpIntent':
-        return get_welcome_response()
+        return help()
     elif intent_name == 'AMAZON.CancelIntent' or intent_name == 'AMAZON.StopIntent':
         return handle_session_end_request()
     elif intent_name == 'PlayParticular':
-        return play_particular(intent, session)
+        return play_particular(intent)
     elif intent_name == 'PlayRandom':
-        return play_random(intent, session)
+        return play_random()
     else:
         raise ValueError('Invalid intent')
 
